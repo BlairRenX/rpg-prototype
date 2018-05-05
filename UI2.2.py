@@ -33,6 +33,7 @@ def startup():
 
 #write fucntion takes text and the textbox it's from 
 def enter(inpt,txt):
+    enter.input_entered = True
     txt = cleanInput(txt)
     cleanOutput()
     global text
@@ -84,10 +85,19 @@ def cleanInput(txt):
             txt = txt[:i] + '\n' + txt[i:]
     return(txt)
 
+def displayCurrent():
+    global output
+    situation = ["You stand in an empty room. There is a door ahead of you and a door behind you", ["Try north door", "Try south door", "Other"]]
+    write(situation[0])
+    write('\nOptions:')
+    for option in situation[1]:
+        write(option)
+    write('\n') 
 
+enter.input_entered = False
 startup()
 
-write('This is how to just make some text appear.')
+displayCurrent()
 
 tk.mainloop()
 
