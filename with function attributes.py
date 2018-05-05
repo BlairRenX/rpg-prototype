@@ -78,8 +78,11 @@ def cleanOutput():
 def cleanInput(txt):
     n = 0
     for i in range(len(txt)):
-        if i != '\n':
+        if txt[i] != '\n':
             n+=1
+        else:
+            n = 0
+            
         if n > 80:
             n = 0
             txt = txt[:i] + '\n' + txt[i:]
