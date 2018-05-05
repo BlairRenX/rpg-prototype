@@ -41,7 +41,7 @@ class UI():
     #write fucntion takes text and the textbox it's from 
     def enter(self,inpt,txt):
         ###enter.input_entered = True
-        self.txt = self.cleanInput(txt)
+        txt = self.cleanInput(txt)
         self.cleanOutput()
         
         for i in txt:
@@ -62,9 +62,9 @@ class UI():
            
     def write(self,txt):
         #global text
-        self.txt = self.cleanInput(txt)
+        txt = self.cleanInput(txt)
         self.cleanOutput()
-        self.txt+='\n'
+        txt+='\n'
         self.inpt.config(state = 'disabled')
         for i in txt:
             self.text += i
@@ -92,6 +92,7 @@ class UI():
             if n > 80:
                 n = 0
                 txt = txt[:i] + '\n' + txt[i:]
+        print(txt)
         return(txt)
 
     def displayCurrent(self):
