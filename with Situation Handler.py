@@ -108,6 +108,7 @@ class UI():
     def getNewSitch(self, newSitch):
         print(newSitch)
         self.situation = newSitch
+        jeremy.sitchOptions = self.situation[1]
         self.displayCurrent()
 
 ##UI.enter.input_entered = False
@@ -115,24 +116,27 @@ class UI():
 ##
 class SituationHandler:
     def __init__(self):
-        self.sitch1 = ["You sit down. The floor is smooth and cold, with the texture and colour of marble.", ["Stand Up", "Sleep"]]
-        self.sitch2 = ["You try the north door. It is locked and will not budge.", ["Back to middle of room", "break it down"]]
-        self.sitch3 = ["You try the south door. It slides open, accompanied by the hiss of pressurized gas.", ["Try other door", "Enter"]]
+        self.sitchOptions = ui.situation[1]
+        self.sitch0 = ["You try the north door. It is locked and will not budge.", ["Back to middle of room", "break it down"]]
+        self.sitch1 = ["You try the south door. It slides open, accompanied by the hiss of pressurized gas.", ["Try other door", "Enter"]]
+        self.sitch2 = ["You sit down. The floor is smooth and cold, with the texture and colour of marble.", ["Stand Up", "Sleep"]]
         
     def nextSitch(self, argument):
         temp = argument.lower()
         temp = temp.strip()
         ui.write("\n")
         
-        if temp == "other":
+        if temp == self.sitchOptions[0].lower():
+            ui.getNewSitch(self.sitch0)
+        elif temp == self.sitchOptions[1].lower():
             ui.getNewSitch(self.sitch1)
-        elif temp == "try north door":
+        elif temp == self.sitchOptions[2].lower():
             ui.getNewSitch(self.sitch2)
-        elif temp == "try south door":
-            ui.getNewSitch(self.sitch3)
         else:
             ui.write("Invalid input.")
         ui.write("\n")
+
+        
             
 main = tk.Tk()
 ui = UI(main)
