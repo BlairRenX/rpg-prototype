@@ -68,10 +68,12 @@ def write(txt):
 
 def cleanOutput():
     global text
-    if text.count('\n')>27:
-        print(text)
-        text = text[text.index('/n'):]
-        print(text)
+    if text.count('\n')>25:
+        cutof = text.index('\n')+1
+        print(cutof)
+        text = text[cutof:]
+        #cleanOutput()
+
         
 
 
