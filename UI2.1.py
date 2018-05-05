@@ -11,7 +11,7 @@ def startup():
 
     #Big output text box. Disabled so cannot be typed in.
     #rel-x,y,height,width are relative placement for window
-    output = tk.Label(main)
+    output = tk.Label(main, anchor = 'nw', justify = 'left')
     output.place(relx =0.2, rely = 0.02, relheight=0.6, relwidth=0.6)
 
     #Input box
