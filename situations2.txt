@@ -1,4 +1,0 @@
-startRoom|You stand in an empty room. There is a door ahead of you and a door behind you|["Try north door", "Try south door", "Other"]|["northDoor", "southDoor", "sitDown"]|[]
-northDoor|You try the north door. It is locked and will not budge.|["Back to middle of room", "break it down"]|["startRoom"]|["startRoom"]
-southDoor|You try the south door. It slides open, accompanied by the hiss of pressurized gas.|["Try other door", "Enter"]|["startRoom"]|["startRoom"]
-sitDown|You sit down. The floor is smooth and cold, with the texture and colour of marble.|["Stand Up", "Sleep"]|["startRoom"]|["startRoom"]
