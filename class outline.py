@@ -1,12 +1,40 @@
 class Place(object):
-    def __init__(self):
+    def __init__(self, name, furnishings = [], objects = [], search = ["an empty room"], investigation = ["There is nothing of note here."]):
         self.doors = []
+        self.name = name
         #should be of the format [canBeEntered, Description, leadsTo]
         #and because a room can have multiple doors, it'll be a 2D array
+        self.furnishings = furnishings
+        self.objects = objects
 
-        self.investigation = []
+        self.search = search
+
+        self.investigation = investigation
         #should be of the form [canBeInvestigated, Description, leadsTo]
         #'cept obviously you still get a description if you can't
+    def showDoors(self):
+        for door in self.doors:
+            print(door.viewDoors())
+            
+    def setDoors(self, otherRooms):
+        for otherRoom in otherRooms:
+            self.doors.append(Door("D" + self.name + otherRoom.name, self, otherRoom))
+            
+        
+class Door(object):
+    def __init__(self, name, room1, room2):
+        self.name = name
+        self.room1 = room1
+        self.room2 = room2
+##    def setDoors(self):
+##        self.room1.doors.append(self)
+##        self.room2.doors.append(self)
+    def viewDoors(self):
+        return("This door connects " + self.room1.search[0] + " and " + self.room2.search[0] + ".")
+    def goThrough(self, currentRoom):
+        return self.room2
+    def goBackThrough(self, currentRoom):
+        return self.room1
 
 class gameObject(object):
     def __init__(self, description, inspectDesc):
@@ -69,8 +97,10 @@ class nonPlayerCharacter(Character):
         #some sample dialogue for whatever reason
 
 class playerCharacter(Character):
-    def __init__(self, name, stats, inventory):
+    def __init__(self, name, stats, inventory, startingRoom):
         super(playerCharacter,self).__init__(name, stats, inventory)
+        self.currentRoom = startingRoom
+        #this should really be in the Character class but I want to make sure it's working first
 
     def useItem(self, item):
         #the actual use
@@ -108,23 +138,36 @@ class playerCharacter(Character):
         print("You have in your possession: ")
         for item in self.inventory:
             print(item.basicDesc)
+
+    def moveRooms(self, door):
+        #self.currentRoom.doors[door]
+        for aDoor in self.currentRoom.doors:
+            if aDoor.name == door:
+                self.currentRoom = aDoor.room2
+                
+    def showLocation(self):
+        print(self.currentRoom.search[0])
+            
+aSmallRock = inventoryObject("a small rock", "rock...", "hard stone")
         
-    
+R1 = Place("R1")
+R2 = Place("R2",[],[], ["a lavishly decorated mezzanine"], ["a painting of yourself"])
+R3 = Place("R3",[], [aSmallRock])
 
-aSmallRock = inventoryObject("small rock","A small rock. It feels oddly warm.", "A roughly oval stone. Its smooth surface has been polished.", [True, 1])
-aLargeRock = inventoryObject("fist-sized stone", "A roughly fist-sized rock. Its heft is reassuring.",
-                             "A jagged stone that has been chipped down to a rough-hewn point. It could easily be made into a spear.")
-jeremy = playerCharacter("Jeremy", [1,2], [aLargeRock])
-jeremy.inspectItem(aLargeRock)
+R1.setDoors([R2])
+R2.setDoors([R1, R3])
+R3.setDoors([R2])
+R1.showDoors()
+R2.showDoors()
+R3.showDoors()
 
-jeremy.takeItem(aSmallRock)
+jeremy = playerCharacter("jeremy", [1,2], [], R1)
+jeremy.showLocation()
+jeremy.moveRooms("DR1R2")
+jeremy.showLocation()
 
-print("\n")
 
-jeremy.displayInventory()
-print("\n")
-jeremy.inspectItem(aSmallRock)
-
+#TO MOVE ROOMS YOU NEED THE DOOR CODE
 
 
     
