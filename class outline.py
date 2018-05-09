@@ -9,8 +9,11 @@ class Place(object):
         #'cept obviously you still get a description if you can't
 
 class gameObject(object):
-    def __init__(self, description):
-        self.inspectDesc = description
+    def __init__(self, description, inspectDesc):
+        self.basicDesc = description
+        #a description that displays when you look at it
+
+        self.inspectDesc = inspectDesc
         #a description that displays when you inspect it
 
         self.usable = []
@@ -18,25 +21,26 @@ class gameObject(object):
         #once again, there'll probably be two descriptions, but we'll get to that
 
     def getDesc(self):
-        print(self.inspectDesc)
-        return self.inspectDesc
+        print(self.basicDesc)
+        return self.basicDesc
 
 class roomFurnishing(gameObject):
-    def __init__(self, description):
-        super(roomFurnishing, self).__init__(description)
+    def __init__(self, description, inspectDesc):
+        super(roomFurnishing, self).__init__(description, inspectDesc)
 
         self.investigation = []
         #as with the place investigation, but on a single furnishing within a room
 
 class inventoryObject(gameObject):
-    def __init__(self, description, expendable = [False], taken=["You","You pick up the object"]):
-        super(inventoryObject,self).__init__(description)
+    def __init__(self, objName, description, inspectDesc, taken=["No-one","You pick up the object."], expendable = [False], droppable=True):
+        super(inventoryObject,self).__init__(description, inspectDesc)
+
+        self.objName = objName
 
         self.taken = taken
         #include things about ownership, a description when you pick it up, etc...
-        #null it's no-one's
 
-        self.droppable = []
+        self.droppable = droppable
         #removing itself from the bag, and so on...
 
         self.expendable = expendable
@@ -79,24 +83,49 @@ class playerCharacter(Character):
             #a confirmation message should probably be put in here at some point
 
     def inspectItem(self,item):
-        if item is in self.inventory:
+        if item in self.inventory:
             #can never be too careful
-            print("It belongs to" + item.taken[0])
+            print("This " + item.objName + " belongs to " + item.taken[0] + ".")
             print(item.inspectDesc)
+
+    def takeItem(self, item):
+        if item.taken[0] == "No-one" or item.taken[0] == "you":
+            item.taken[0] = "you"
+            self.inventory.append(item)
+            #will need to remove it from the room, too
+            print(item.taken[1])
+        else:
+            print("That's not yours.")
+
+    def dropItem(self, item):
+        if item.droppable == False:
+            print("You need this object for something.")
+        else:
+            self.inventory.remove(item)
+            #will need to make it become an object of the room after it's dropped
                 
     def displayInventory(self):
         print("You have in your possession: ")
         for item in self.inventory:
-            print(item.inspectDesc)
+            print(item.basicDesc)
         
     
 
-aSmallRock = inventoryObject("A small rock. It feels oddly warm.", [True, 1])
-aLargeRock = inventoryObject("A roughly fist-sized rock. Its heft is reassuring.")
-jeremy = playerCharacter("Jeremy", [1,2], [aSmallRock, aLargeRock])
+aSmallRock = inventoryObject("small rock","A small rock. It feels oddly warm.", "A roughly oval stone. Its smooth surface has been polished.", [True, 1])
+aLargeRock = inventoryObject("fist-sized stone", "A roughly fist-sized rock. Its heft is reassuring.",
+                             "A jagged stone that has been chipped down to a rough-hewn point. It could easily be made into a spear.")
+jeremy = playerCharacter("Jeremy", [1,2], [aLargeRock])
+jeremy.inspectItem(aLargeRock)
+
+jeremy.takeItem(aSmallRock)
+
+print("\n")
+
 jeremy.displayInventory()
-jeremy.useItem(aSmallRock)
-jeremy.displayInventory()
+print("\n")
+jeremy.inspectItem(aSmallRock)
+
+
 
     
     
