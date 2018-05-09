@@ -2,30 +2,45 @@ def interpret(text):
 
     text = simplify(text)
 
-    allVerbs = ['using','search','move','attack','talk','take','open','close','inspect']
-
-
+    verbs = ['search','move','attack','talk','take','open','close','inspect']
+    using = 'using'
+    currentVerb = ''
+    verbNumber=0
+    usingNumber=0
     words = text.split()
     do = {}
 
     for word in words:
-        for verb in allVerbs:
+        for verb in verbs:
             if word == verb:
+                verbNumber+=1
                 do[verb] = ''
                 currentVerb = verb
                 continue
-        if word not in allVerbs:
-            do[currentVerb]+=word
-
-    return(do)
+            
+        if word == using:
+            usingNumber+=1
+            do[using] = ''
+            currentVerb = using
+            
+        if word not in verbs and word != using and currentVerb != '':
+            if do[currentVerb] == '':
+                do[currentVerb]+=word
+            else:
+                do[currentVerb] += ' '+word
+            
+    if verbNumber >1 or usingNumber>1:
+        return({'error':'mulitple commands'})
+    else:
+        return(do)
     
                     
         
 def simplify(text):
     
     toRemove = []
-    fillerWords = ['to',',','.','in','the','teh','from','a','at','near','for','on','behind','under','while','and','by','my','around']
-    
+    fillerWords = ['to','in','the','teh','from','a','at','near','for','on','behind','under','while','and','by','my','around']
+    punctuation = [',','.','?','!','\'',';',':']
              
     using = ['use','using','with','try','trying','activate','activating','fire','firing','turn','turning']
     
@@ -45,7 +60,8 @@ def simplify(text):
     verbs = ['using','search','move','attack','talk','take','open','close','inspect']
     words = {'using':using,'search':search,'move':move,'attack':attack,'talk':talk,'take':take,'open':open_,'close':close,'inspect':inspect}
                 
-                
+    
+        
     text = text.lower()
     text = text.split()
     sentence = ''
@@ -53,6 +69,8 @@ def simplify(text):
     for i in range(len(text)):
         if text[i] in fillerWords:
             toRemove.append(text[i])
+        if text[i][-1] in punctuation:
+            text[i] = text[i][:-1]
         for verb in verbs:
             if text[i] in words[verb]:
                 text[i] = verb
@@ -67,5 +85,15 @@ def simplify(text):
 
 while True:
     print('\n')
-    print(interpret(input('Type: ')))
+    do = interpret(input('Type: '))
+    for key in do:
+        if key == 'using':
+            using = ' ' + key + ' the ' + do[key]
+        else:
+            verb = key +' the '+ do[key]
+    print('You try to ' + verb + using)
+
+
+
+    
 
