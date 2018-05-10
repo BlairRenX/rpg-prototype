@@ -274,6 +274,39 @@ class Place(object):
         temp.append(tempTemp)
 
         return temp
+
+    def showAllObjects(self):
+        temp = []
+        tempTemp = []
+        for furnishing in self.furnishings:
+            tempTemp.append(furnishing)
+        temp.append(tempTemp)
+        
+        tempTemp = []
+        for anObject in self.objects:
+            tempTemp.append(anObject)
+        temp.append(tempTemp)
+
+        tempTemp = []
+        for character in self.characters:
+            tempTemp.append(character)
+        temp.append(tempTemp)
+
+        tempTemp = []
+        for door in self.doors:
+            tempTemp.append(door)
+        temp.append(tempTemp)
+
+        return temp
+
+    def showAllObjectsAndNames(self):
+        temp1 = showAll()
+        temp2 = showAllObjects()
+        temp3 = []
+        for i in range(len(temp1)):
+            temp3.append([temp1[i],temp2[i]])
+        return temp3
+        
             
     def showDoors(self):
         for door in self.doors:
