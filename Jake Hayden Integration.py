@@ -42,32 +42,33 @@ class UI():
 
     #write fucntion takes text and the textbox it's from 
     def enter(self,inpt,txt):
-        ###enter.input_entered = True
-        txt = txt.replace('\n','')
-       
-        if txt == 't':
-            ui.talkWindow(jeremy,C1)
-        txt = self.cleanInput(txt)
-        self.cleanOutput()
-        txt = txt+'\n'
-        for i in txt:
-            #Types to the end of textbox with value i
-            self.text += i
-            self.output.config(text = self.text)
-            
-            self.inpt.delete('end-2c','end-1c')
-            #sleep for that cool typing effect
-            time.sleep(0.03)
-            #tkinter is shit
-            self.main.update()
-        #scrolls output to bottom (without its not possible to scroll at all, its odd)   
-        #makes sure input is empt but is currently buggy not sure why, seems to automatically lead with a \n or ' ' weird ass shit
+        if txt != None:
+            txt = txt.replace('\n','')
 
-        #jeremy.nextSitch(self.txt)
-        
-        self.inpt.delete('0.0','end')
-        #disable output so cannot be typed in
-        
+            if txt == 't':
+                ui.talkWindow(jeremy,C1)
+            txt = self.cleanInput(txt)
+            self.cleanOutput()
+            txt = txt+'\n'
+            for i in txt:
+                #Types to the end of textbox with value i
+                self.text += i
+                self.output.config(text = self.text)
+
+                self.inpt.delete('end-2c','end-1c')
+                #sleep for that cool typing effect
+                time.sleep(0.03)
+                #tkinter is shit
+                self.main.update()
+            #scrolls output to bottom (without its not possible to scroll at all, its odd)   
+            #makes sure input is empt but is currently buggy not sure why, seems to automatically lead with a \n or ' ' weird ass shit
+
+            #jeremy.nextSitch(self.txt)
+
+            self.inpt.delete('0.0','end')
+            #disable output so cannot be typed in
+        else:
+            pass
            
     def write(self,txt):
         
