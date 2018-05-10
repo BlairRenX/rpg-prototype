@@ -42,30 +42,32 @@ class UI():
 
     #write fucntion takes text and the textbox it's from 
     def enter(self,inpt,txt):
-        if txt != None:
-            txt = txt.replace('\n','')
+        ###enter.input_entered = True
+        txt = txt.replace('\n','')
+       
+        if txt == 't':
+            ui.talkWindow(jeremy,C1)
+        txt = self.cleanInput(txt)
+        self.cleanOutput()
+        txt = txt+'\n'
+        for i in txt:
+            #Types to the end of textbox with value i
+            self.text += i
+            self.output.config(text = self.text)
+            
+            self.inpt.delete('end-2c','end-1c')
+            #sleep for that cool typing effect
+            time.sleep(0.03)
+            #tkinter is shit
+            self.main.update()
+        #scrolls output to bottom (without its not possible to scroll at all, its odd)   
+        #makes sure input is empt but is currently buggy not sure why, seems to automatically lead with a \n or ' ' weird ass shit
 
-            if txt == 't':
-                ui.talkWindow(jeremy,C1)
-            txt = self.cleanInput(txt)
-            self.cleanOutput()
-            txt = txt+'\n'
-            for i in txt:
-                #Types to the end of textbox with value i
-                self.text += i
-                self.output.config(text = self.text)
-
-                self.inpt.delete('end-2c','end-1c')
-                #sleep for that cool typing effect
-                time.sleep(0.03)
-                #tkinter is shit
-                self.main.update()
-            #scrolls output to bottom (without its not possible to scroll at all, its odd)   
-            #makes sure input is empt but is currently buggy not sure why, seems to automatically lead with a \n or ' ' weird ass shit
-            self.inpt.delete('0.0','end')
-            #disable output so cannot be typed in
-        else:
-            pass
+        #jeremy.nextSitch(self.txt)
+        
+        self.inpt.delete('0.0','end')
+        #disable output so cannot be typed in
+        
            
     def write(self,txt):
         
@@ -121,11 +123,11 @@ class TalkUi():
         self.output = tk.Label(self.main, anchor = 'nw', justify = 'left')
         self.output.place(relx =0.2, rely = 0.02, relheight=0.6, relwidth=0.6)
 
-        self.talkBTN = tk.Button(self.main, text='Talk', background = 'light blue', height = 2, command = lambda:(self.talkEnter(self.inpt,self.inpt.get('1.0','end'),npc) ))
+        self.talkBTN = tk.Button(self.main, text='Talk', background = 'light blue', height = 2, command = lambda:(self.enter(self.inpt,self.inpt.get('1.0','end'),npc) ))
        # self.
         
         self.inpt =  tk.Text(self.main, height = 1)
-        self.inpt.bind("<Return>", lambda x: self.talkEnter(self.inpt,self.inpt.get('1.0','end-1c'),npc))
+        self.inpt.bind("<Return>", lambda x: self.enter(self.inpt,self.inpt.get('1.0','end-1c'),npc))
         self.inpt.bind("<space>", lambda x:self.inpt.delete('0.0','end+2c'))
         self.inpt.place(relx =0.36, rely = 0.65,  relwidth=0.25)
         self.conversationBegin(npc)
@@ -135,8 +137,8 @@ class TalkUi():
         self.prevWord = 'start'
 
     def conversationBegin(self,npc):
-        self.talkWrite('You enter conversation with a '+npc.desc)
-        self.talkWrite(npc.name+ ':    ' + npc.talk['start'][0])
+        self.write('You enter conversation with a '+npc.desc)
+        self.write(npc.name+ ':    ' + npc.talk['start'][0])
         self.inConversation = True
 
 
@@ -149,29 +151,29 @@ class TalkUi():
                 else:
                     npc.interest = 6
                 if npc.interest + npc.talk[word][1][0] < 0:
-                    self.talkWrite('That seems to have struck a nerve with %s, they turn away. This conversation is clearly over.'%npc.name)
+                    self.write('That seems to have struck a nerve with %s, they turn away. This conversation is clearly over.'%npc.name)
                     self.inConversation  = False
                 else:    
-                    self.talkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
-                    self.talkWrite(npc.name+ ':    ' + npc.talk[word][0])
+                    self.write(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
+                    self.write(npc.name+ ':    ' + npc.talk[word][0])
                     self.prevWord = word
                 
             if word not in npc.talk:
                 if npc.talk[self.prevWord][1][1] != 0:
                     npc.interest += npc.talk[self.prevWord][1][1]
                     if npc.interest >-1:
-                        self.talkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
+                        self.write(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
                     else:
-                        self.talkWrite(npc.name +' has had enough of you. This conversation is clearly over')
+                        self.write(npc.name +' has had enough of you. This conversation is clearly over')
                         self.inConversation = False
                 else:
-                    self.talkWrite(npc.name + ' didn\'t understand you, but they didn\'t seem to care. They are still' + self.mood[npc.interest] +'you.')
+                    self.write(npc.name + ' didn\'t understand you, but they didn\'t seem to care. They are still' + self.mood[npc.interest] +'you.')
 
 
 
 
 
-    def TalkEnter(self,inpt,txt,npc):
+    def enter(self,inpt,txt,npc):
         
         txt = txt.replace('\n','')
         if txt[-1] in ('?','.',' ','\n'):
@@ -194,7 +196,7 @@ class TalkUi():
         self.inpt.delete('0.0','end')
 
                     
-    def talkWrite(self,txt):
+    def write(self,txt):
         txt = self.cleanInput(txt)
         self.cleanOutput()
         txt+='\n'
@@ -234,7 +236,7 @@ main = tk.Tk()
 ui = UI(main)
 
 class Place(object):
-    def __init__(self, name, quality = 3, furnishings = [], objects = [], search = ["an empty room"], investigation = ["There is nothing of note here."]):
+    def __init__(self, name, quality = 3, furnishings = [], objects = [], characters = [],search = ["an empty room"], investigation = ["There is nothing of note here."]):
         self.doors = []
         self.name = name
         #should be of the format [canBeEntered, Description, leadsTo]
@@ -242,12 +244,37 @@ class Place(object):
         self.quality = quality
         self.furnishings = furnishings
         self.objects = objects
+        self.characters = characters
 
         self.search = search
 
         self.investigation = investigation
         #should be of the form [canBeInvestigated, Description, leadsTo]
         #'cept obviously you still get a description if you can't
+    def showAll(self):
+        temp = []
+        tempTemp = []
+        for furnishing in self.furnishings:
+            tempTemp.append(furnishing.name)
+        temp.append(tempTemp)
+        
+        tempTemp = []
+        for anObject in self.objects:
+            tempTemp.append(anObject.objName)
+        temp.append(tempTemp)
+
+        tempTemp = []
+        for character in self.characters:
+            tempTemp.append(character.desc)
+        temp.append(tempTemp)
+
+        tempTemp = []
+        for door in self.doors:
+            tempTemp.append(door.desc)
+        temp.append(tempTemp)
+
+        return temp
+            
     def showDoors(self):
         for door in self.doors:
             ui.write(door.viewDoors())
@@ -255,6 +282,10 @@ class Place(object):
     def setDoors(self, otherRooms):
         for otherRoom in otherRooms:
             self.doors.append(Door("D" + self.name + otherRoom.name, self, otherRoom))
+            
+        for door in self.doors:
+            door.setDescriptor()
+
 
     def describeRoom(self):
             
@@ -353,19 +384,32 @@ class Door(object):
         self.name = name
         self.room1 = room1
         self.room2 = room2
+        self.desc = ""
 ##    def setDoors(self):
 ##        self.room1.doors.append(self)
 ##        self.room2.doors.append(self)
     def viewDoors(self):
-        return("This door connects " + self.room1.search[0] + " and " + self.room2.search[0] + ".")
+        return("This " + self.desc + " door connects " + self.room1.search[0] + " and " + self.room2.search[0] + ".")
     def goThrough(self, currentRoom):
         return self.room2
     def goBackThrough(self, currentRoom):
         return self.room1
+    
+    def setDescriptor(self):
+        if self == self.room1.doors[0]:
+            self.desc = "south"
+        elif self == self.room1.doors[1]:
+            self.desc = "north"
+        elif self == self.room1.doors[2]:
+            self.desc = "west"
+        elif self == self.room1.doors[3]:
+            self.desc = "east"
+        else:
+            self.desc = "charred"
 
 class gameObject(object):
-    def __init__(self, description, inspectDesc, hidden = False):
-        self.basicDesc = description
+    def __init__(self, basicDesc, inspectDesc, hidden = False):
+        self.basicDesc = basicDesc
         #a description that displays when you look at it
 
         self.inspectDesc = inspectDesc
@@ -382,15 +426,16 @@ class gameObject(object):
         return self.basicDesc
 
 class roomFurnishing(gameObject):
-    def __init__(self, description, inspectDesc):
-        super(roomFurnishing, self).__init__(description, inspectDesc)
+    def __init__(self, name, basicDesc, inspectDesc):
+        super(roomFurnishing, self).__init__(basicDesc, inspectDesc)
+        self.name = name
 
         self.investigation = []
         #as with the place investigation, but on a single furnishing within a room
 
 class inventoryObject(gameObject):
-    def __init__(self, objName, description, inspectDesc, taken=["No-one","You pick up the object."], expendable = [False], droppable=True, equippable = [False]):
-        super(inventoryObject,self).__init__(description, inspectDesc)
+    def __init__(self, objName, basicDesc, inspectDesc, taken=["No-one","You pick up the object."], expendable = [False], droppable=True, equippable = [False]):
+        super(inventoryObject,self).__init__(basicDesc, inspectDesc)
 
         self.objName = objName
 
@@ -404,7 +449,7 @@ class inventoryObject(gameObject):
         #if it's expendable, and if so, how many uses it has
 
         self.equippable = equippable
-        #if it's a weapon, armour, etc...
+        #currently using a simple numerical value for quality
 
 
 
@@ -414,26 +459,41 @@ class Character(object):
         self.inventory = inventory
         self.currentRoom = startingRoom
         #an array of inventory objects
+        
+        basicShirt = inventoryObject(objName ="basic shirt", basicDesc="a basic synth-cloth shirt", inspectDesc="There's a small rip in the armpit...", equippable=[True,"clothesTorso"])
+        basicLegs = inventoryObject(objName= "basic legwear", basicDesc="basic synth-cloth legwear", inspectDesc="This could probably do with being washed.", equippable=[True, "clothesLegs"])
+        basicShoes = inventoryObject(objName="basic shoes", basicDesc="basic synthetic fabric and rubber shoes", inspectDesc="You can feel a hole in your sock. Ugh.", equippable=[True, "footwear"])
+        
+        self.inventory.append(basicShirt)
+        self.inventory.append(basicLegs)
+        self.inventory.append(basicShoes)
 
         #in case we decide to add stats later
 
         self.equipped = {
-            "clothesTorso" : "Basic synth-cloth shirt",
-            "clothesLegs" : "Basic synth-cloth legwear",
-            "armwear" : "None",
-            "headgear" : "None",
-            "footwear" : "Standard boots",
-            "armourTorso" : "None",
-            "armourLegs" : "None",
-            "accessories" : ["None"],
-            "weaponLeft" : "None",
-            "weaponRight" : "None",
-            "weaponBoth" : "None"
+            "clothesTorso" : basicShirt,
+            "clothesLegs" : basicLegs,
+            "armwear" : None,
+            "headgear" : None,
+            "footwear" : basicShoes,
+            "armourTorso" : None,
+            "armourLegs" : None,
+            "accessories" : [],
+            "weaponLeft" : None,
+            "weaponRight" : None,
+            "weaponBoth" : None
             }
         #this is more for a fantasy setting and it hasn't been tested cuz I wrote it at 00:37
 
     def getName(self):
         return self.name
+
+    def whatsMine(self):
+        for item in self.equipped:
+            if self.equipped[item] == None or self.equipped[item] == []:
+                pass
+            else:
+                ui.write(self.equipped[item].basicDesc)
     
 
 
@@ -475,6 +535,16 @@ class playerCharacter(Character):
         else:
             ui.write("That's not yours.")
 
+    def equipItem(self,item):
+        if self.equipped[item.equippable[1]] == None:
+            self.equipped[item.equippable[1]] = item
+        elif self.equipped[item.equippable[1]] == [] or isinstance(self.equipped[item.equippable[1]], list):
+            #NOTE: THIS MIGHT NOT WORK
+            self.equipped[item.equippable[1]].append(item)
+        else:
+            self.equipped[item.equippable[1]] = item
+            #I'll put a swap confirmation message here when I'm bothered enough by it
+
     def dropItem(self, item):
         if item.droppable == False:
             ui.write("You need this object for something.")
@@ -503,7 +573,8 @@ class playerCharacter(Character):
         ui.talkWindow(self,other)
         
 aSmallRock = inventoryObject("a small rock", "a small rock", "hard stone")
-chestOfDrawers = roomFurnishing("a chest of drawers", "a weathered wooden chest of 4 drawers.")
+chestOfDrawers = roomFurnishing("a chest of drawers","a chest of drawers", "a weathered wooden chest of 4 drawers.")
+smallKnife = inventoryObject(objName ="small knife", basicDesc="a small flick-knife", inspectDesc="It's covered in scratches.", equippable=[True,"weaponLeft"])
         
 R1 = Place("R1", 3, [chestOfDrawers], [aSmallRock], ["a simple yet comfortable bedroom"])
 R2 = Place("R2",4, [],[], ["a lavishly decorated mezzanine"], ["a painting of yourself"])
@@ -526,12 +597,15 @@ TalkC1 = {  'start':['Well hello there. Can I interest you in some lemons?',[0,-
             'home':['it\'s a small house. I dont much care for it',[-1,-1]]}
 
 C1 = nonPlayerCharacter('C1','John','a small man', TalkC1,3, R1)
-jeremy.searchRoom()
-main.mainloop()
 
-jeremy.showLocation()
-jeremy.moveRooms("DR1R2")
-jeremy.showLocation()
+##jeremy.equipItem(smallKnife)
+##jeremy.whatsMine()
+#jeremy.searchRoom()
+#main.mainloop()
+
+##jeremy.showLocation()
+##jeremy.moveRooms("DR1R2")
+##jeremy.showLocation()
 
 
 #TO MOVE ROOMS YOU NEED THE DOOR CODE
