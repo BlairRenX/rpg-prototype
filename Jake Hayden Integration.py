@@ -62,9 +62,6 @@ class UI():
                 self.main.update()
             #scrolls output to bottom (without its not possible to scroll at all, its odd)   
             #makes sure input is empt but is currently buggy not sure why, seems to automatically lead with a \n or ' ' weird ass shit
-
-            #jeremy.nextSitch(self.txt)
-
             self.inpt.delete('0.0','end')
             #disable output so cannot be typed in
         else:
@@ -124,11 +121,11 @@ class TalkUi():
         self.output = tk.Label(self.main, anchor = 'nw', justify = 'left')
         self.output.place(relx =0.2, rely = 0.02, relheight=0.6, relwidth=0.6)
 
-        self.talkBTN = tk.Button(self.main, text='Talk', background = 'light blue', height = 2, command = lambda:(self.enter(self.inpt,self.inpt.get('1.0','end'),npc) ))
+        self.talkBTN = tk.Button(self.main, text='Talk', background = 'light blue', height = 2, command = lambda:(self.talkEnter(self.inpt,self.inpt.get('1.0','end'),npc) ))
        # self.
         
         self.inpt =  tk.Text(self.main, height = 1)
-        self.inpt.bind("<Return>", lambda x: self.enter(self.inpt,self.inpt.get('1.0','end-1c'),npc))
+        self.inpt.bind("<Return>", lambda x: self.talkEnter(self.inpt,self.inpt.get('1.0','end-1c'),npc))
         self.inpt.bind("<space>", lambda x:self.inpt.delete('0.0','end+2c'))
         self.inpt.place(relx =0.36, rely = 0.65,  relwidth=0.25)
         self.conversationBegin(npc)
@@ -138,8 +135,8 @@ class TalkUi():
         self.prevWord = 'start'
 
     def conversationBegin(self,npc):
-        self.write('You enter conversation with a '+npc.desc)
-        self.write(npc.name+ ':    ' + npc.talk['start'][0])
+        self.talkWrite('You enter conversation with a '+npc.desc)
+        self.talkWrite(npc.name+ ':    ' + npc.talk['start'][0])
         self.inConversation = True
 
 
@@ -152,29 +149,29 @@ class TalkUi():
                 else:
                     npc.interest = 6
                 if npc.interest + npc.talk[word][1][0] < 0:
-                    self.write('That seems to have struck a nerve with %s, they turn away. This conversation is clearly over.'%npc.name)
+                    self.talkWrite('That seems to have struck a nerve with %s, they turn away. This conversation is clearly over.'%npc.name)
                     self.inConversation  = False
                 else:    
-                    self.write(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
-                    self.write(npc.name+ ':    ' + npc.talk[word][0])
+                    self.talkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
+                    self.talkWrite(npc.name+ ':    ' + npc.talk[word][0])
                     self.prevWord = word
                 
             if word not in npc.talk:
                 if npc.talk[self.prevWord][1][1] != 0:
                     npc.interest += npc.talk[self.prevWord][1][1]
                     if npc.interest >-1:
-                        self.write(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
+                        self.talkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
                     else:
-                        self.write(npc.name +' has had enough of you. This conversation is clearly over')
+                        self.talkWrite(npc.name +' has had enough of you. This conversation is clearly over')
                         self.inConversation = False
                 else:
-                    self.write(npc.name + ' didn\'t understand you, but they didn\'t seem to care. They are still' + self.mood[npc.interest] +'you.')
+                    self.talkWrite(npc.name + ' didn\'t understand you, but they didn\'t seem to care. They are still' + self.mood[npc.interest] +'you.')
 
 
 
 
 
-    def enter(self,inpt,txt,npc):
+    def TalkEnter(self,inpt,txt,npc):
         
         txt = txt.replace('\n','')
         if txt[-1] in ('?','.',' ','\n'):
@@ -197,7 +194,7 @@ class TalkUi():
         self.inpt.delete('0.0','end')
 
                     
-    def write(self,txt):
+    def talkWrite(self,txt):
         txt = self.cleanInput(txt)
         self.cleanOutput()
         txt+='\n'
