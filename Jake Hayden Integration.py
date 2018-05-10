@@ -57,7 +57,7 @@ class UI():
             
             self.inpt.delete('end-2c','end-1c')
             #sleep for that cool typing effect
-            time.sleep(0.05)
+            time.sleep(0.03)
             #tkinter is shit
             self.main.update()
         #scrolls output to bottom (without its not possible to scroll at all, its odd)   
@@ -252,7 +252,7 @@ class Place(object):
         #'cept obviously you still get a description if you can't
     def showDoors(self):
         for door in self.doors:
-            print(door.viewDoors())
+            ui.write(door.viewDoors())
             
     def setDoors(self, otherRooms):
         for otherRoom in otherRooms:
@@ -346,7 +346,8 @@ class Place(object):
             for roomObject in self.objects:
                 if roomObject.hidden == False:
                     roomDescription += roomObject.basicDesc
-        print(roomDescription)
+        #print(roomDescription)
+        return roomDescription
             
         
 class Door(object):
@@ -378,7 +379,8 @@ class gameObject(object):
         #gonna need to talk a lot of this over with jake when we get to integration
 
     def getDesc(self):
-        print(self.basicDesc)
+        #print(self.basicDesc)
+        
         return self.basicDesc
 
 class roomFurnishing(gameObject):
@@ -463,29 +465,29 @@ class playerCharacter(Character):
     def inspectItem(self,item):
         if item in self.inventory:
             #can never be too careful
-            print("This " + item.objName + " belongs to " + item.taken[0] + ".")
-            print(item.inspectDesc)
+            ui.write("This " + item.objName + " belongs to " + item.taken[0] + ".")
+            ui.write(item.inspectDesc)
 
     def takeItem(self, item):
         if item.taken[0] == "No-one" or item.taken[0] == "you":
             item.taken[0] = "you"
             self.inventory.append(item)
             #will need to remove it from the room, too
-            print(item.taken[1])
+            ui.write(item.taken[1])
         else:
-            print("That's not yours.")
+            ui.write("That's not yours.")
 
     def dropItem(self, item):
         if item.droppable == False:
-            print("You need this object for something.")
+            ui.write("You need this object for something.")
         else:
             self.inventory.remove(item)
             currentRoom.objects.append(item)
                 
     def displayInventory(self):
-        print("You have in your possession: ")
+        ui.write("You have in your possession: ")
         for item in self.inventory:
-            print(item.basicDesc)
+            ui.write(item.basicDesc)
 
     def moveRooms(self, door):
         #self.currentRoom.doors[door]
@@ -494,10 +496,10 @@ class playerCharacter(Character):
                 self.currentRoom = aDoor.room2
                 
     def showLocation(self):
-        print(self.currentRoom.search[0])
+        ui.write("You are in " + self.currentRoom.search[0])
 
     def searchRoom(self):
-        print(self.currentRoom.describeRoom())
+        ui.write(self.currentRoom.describeRoom())
 
     def talk(self, other):
         ui.talkWindow(self,other)
@@ -506,6 +508,15 @@ aSmallRock = inventoryObject("a small rock", "a small rock", "hard stone")
 chestOfDrawers = roomFurnishing("a chest of drawers", "a weathered wooden chest of 4 drawers.")
         
 R1 = Place("R1", 3, [chestOfDrawers], [aSmallRock], ["a simple yet comfortable bedroom"])
+R2 = Place("R2",4, [],[], ["a lavishly decorated mezzanine"], ["a painting of yourself"])
+R3 = Place("R3",5, [], [aSmallRock])
+
+R1.setDoors([R2])
+R2.setDoors([R1, R3])
+R3.setDoors([R2])
+R1.showDoors()
+R2.showDoors()
+R3.showDoors()
 
 jeremy = playerCharacter("jeremy", R1)
 
@@ -517,11 +528,12 @@ TalkC1 = {  'start':['Well hello there. Can I interest you in some lemons?',[0,-
             'home':['it\'s a small house. I dont much care for it',[-1,-1]]}
 
 C1 = nonPlayerCharacter('C1','John','a small man', TalkC1,3, R1)
+jeremy.searchRoom()
 main.mainloop()
 
-#jeremy.showLocation()
-#jeremy.moveRooms("DR1R2")
-#jeremy.showLocation()
+jeremy.showLocation()
+jeremy.moveRooms("DR1R2")
+jeremy.showLocation()
 
 
 #TO MOVE ROOMS YOU NEED THE DOOR CODE
