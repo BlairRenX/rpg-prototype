@@ -123,11 +123,11 @@ class TalkUi():
         self.output = tk.Label(self.main, anchor = 'nw', justify = 'left')
         self.output.place(relx =0.2, rely = 0.02, relheight=0.6, relwidth=0.6)
 
-        self.talkBTN = tk.Button(self.main, text='Talk', background = 'light blue', height = 2, command = lambda:(self.talkEnter(self.inpt,self.inpt.get('1.0','end'),npc) ))
+        self.talkBTN = tk.Button(self.main, text='Talk', background = 'light blue', height = 2, command = lambda:(self.TalkEnter(self.inpt,self.inpt.get('1.0','end'),npc) ))
        # self.
         
         self.inpt =  tk.Text(self.main, height = 1)
-        self.inpt.bind("<Return>", lambda x: self.talkEnter(self.inpt,self.inpt.get('1.0','end-1c'),npc))
+        self.inpt.bind("<Return>", lambda x: self.TalkEnter(self.inpt,self.inpt.get('1.0','end-1c'),npc))
         self.inpt.bind("<space>", lambda x:self.inpt.delete('0.0','end+2c'))
         self.inpt.place(relx =0.36, rely = 0.65,  relwidth=0.25)
         self.conversationBegin(npc)
@@ -137,8 +137,8 @@ class TalkUi():
         self.prevWord = 'start'
 
     def conversationBegin(self,npc):
-        self.talkWrite('You enter conversation with a '+npc.desc)
-        self.talkWrite(npc.name+ ':    ' + npc.talk['start'][0])
+        self.TalkWrite('You enter conversation with a '+npc.desc)
+        self.TalkWrite(npc.name+ ':    ' + npc.talk['start'][0])
         self.inConversation = True
 
 
@@ -151,23 +151,23 @@ class TalkUi():
                 else:
                     npc.interest = 6
                 if npc.interest + npc.talk[word][1][0] < 0:
-                    self.talkWrite('That seems to have struck a nerve with %s, they turn away. This conversation is clearly over.'%npc.name)
+                    self.TalkWrite('That seems to have struck a nerve with %s, they turn away. This conversation is clearly over.'%npc.name)
                     self.inConversation  = False
                 else:    
-                    self.talkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
-                    self.talkWrite(npc.name+ ':    ' + npc.talk[word][0])
+                    self.TalkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
+                    self.TalkWrite(npc.name+ ':    ' + npc.talk[word][0])
                     self.prevWord = word
                 
             if word not in npc.talk:
                 if npc.talk[self.prevWord][1][1] != 0:
                     npc.interest += npc.talk[self.prevWord][1][1]
                     if npc.interest >-1:
-                        self.talkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
+                        self.TalkWrite(npc.name+ ' seems' +self.mood[npc.interest] +'your response')
                     else:
-                        self.talkWrite(npc.name +' has had enough of you. This conversation is clearly over')
+                        self.TalkWrite(npc.name +' has had enough of you. This conversation is clearly over')
                         self.inConversation = False
                 else:
-                    self.talkWrite(npc.name + ' didn\'t understand you, but they didn\'t seem to care. They are still' + self.mood[npc.interest] +'you.')
+                    self.TalkWrite(npc.name + ' didn\'t understand you, but they didn\'t seem to care. They are still' + self.mood[npc.interest] +'you.')
 
 
 
@@ -196,7 +196,7 @@ class TalkUi():
         self.inpt.delete('0.0','end')
 
                     
-    def talkWrite(self,txt):
+    def TalkWrite(self,txt):
         txt = self.cleanInput(txt)
         self.cleanOutput()
         txt+='\n'
@@ -320,7 +320,7 @@ class Place(object):
             door.setDescriptor()
 
 
-    def describeRoom(self):
+    def describeRoom(self,UsedObject):
             
         roomDescription = ""
         roomDescription += "The room is " + self.search[0] + ". "
@@ -408,7 +408,6 @@ class Place(object):
             for roomObject in self.objects:
                 if roomObject.hidden == False:
                     roomDescription += roomObject.basicDesc
-        #print(roomDescription)
         return roomDescription
             
         
@@ -599,8 +598,8 @@ class playerCharacter(Character):
     def showLocation(self):
         ui.write("You are in " + self.currentRoom.search[0])
 
-    def searchRoom(self):
-        ui.write(self.currentRoom.describeRoom())
+    def searchRoom(self,usedObject):
+        ui.write(self.currentRoom.describeRoom(usedObject))
 
     def talk(self, other):
         ui.talkWindow(self,other)
@@ -630,10 +629,10 @@ TalkC1 = {  'start':['Well hello there. Can I interest you in some lemons?',[0,-
             'home':['it\'s a small house. I dont much care for it',[-1,-1]]}
 
 C1 = nonPlayerCharacter('C1','John','a small man', TalkC1,3, R1)
-#jeremy.searchRoom()
+#jeremy.searchRoom(None)
 
 
-#jeremy.showLocation()
+jeremy.showLocation()
 #jeremy.moveRooms("DR1R2")
 #jeremy.showLocation()
 a = R1.showAllObjectsAndNames()
@@ -651,6 +650,9 @@ c = R3.showAllObjectsAndNames()
 
 def Execute(text, player):
     action = {}
+
+    #text in form {'verb':Object,'using/do': object}
+    
     error = False
 
     if 'error' in text:
@@ -674,7 +676,12 @@ def Execute(text, player):
         #This doesn't yet work, haden probably should implimnet
         for key in action:
             if key == 'search':
-                action[key].Search(action['using'])
+                
+                #Every object could have a method for every verb, some of which jsut say u cant do that
+                #Alternativley we can call the objects here and not call the ones that it wont work for but i think that will be harder
+                
+                #ui.write(action[key].describeRoom(action['using'])) # This method will not work
+                action[key].Search(action['using']) # it probably should just look like this
             elif key == 'move':
                 action[key].Move(action['using'])
             elif key == 'attack':
@@ -702,20 +709,19 @@ def Execute(text, player):
 
 def MatchInput(text,player):
 
-    #Will take room from player object when that is implemented
+    
     #need to add room and player to things
     #look: around, about, room
     #should default to player
     
-   # room = player.currentroom
-    room = R1
+    room = player.currentRoom
    
     things = room.showAllObjectsAndNames()
     
     
     
     things.append([['around','room','about'],[room,room,room]])
-    things.append([['self'],[player]])
+    things.append([['self','myself','me','i'],[player,player,player,player]])
     
     
 
@@ -755,7 +761,7 @@ def MatchInput(text,player):
                             thingType.append([key,thingList[1][i],thingList[0][i]])
                             
             if len(thingType)!= 0:
-                print(thingType)
+                
                 desc = []
                 for i in range(len(thingType)):
                     desc.append('')
@@ -852,7 +858,6 @@ def Interpret(text,player):
     elif verbNumber == 0:
         Execute({'error':'What are you trying to do?'},player)
     else:
-        print(do)
         Execute(do,player) #sucess!
 
                 
