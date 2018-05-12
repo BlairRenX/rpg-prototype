@@ -675,32 +675,49 @@ def Execute(text, player):
 
         #This doesn't yet work, haden probably should implimnet
         for key in action:
-            if key == 'search':
+            disallowed = {'search':False, 'move':False, 'attack':False, 'talk':False, 'open':False, 'close':False, 'inspect':False, 'using':False, 'act':False}
+            if isinstance(action[key],Place):
+                disallowed['inspect'] = True
+            elif isinstance(action[key], Door):
+                disallowed['move'] = True
+            elif isinstance(action[key], roomFurnishing):
+                disallowed['open'] = True
+                disallowed['close'] = True
+                disallowed['inspect'] = True
+            elif isinstance(action[key], inventoryObject):
+                disallowed['inspect'] = True
+                disallowed['using'] = True
+            elif isinstance(action[key], nonPlayerCharacter):
+                disallowed['attack'] = True
+                disallowed['talk'] = True
+            #we can change these as we see fit, but in terms of solutions this should be fine, right?
+                
+            if key == 'search' and disallowed[key] == True:
                 
                 #Every object could have a method for every verb, some of which jsut say u cant do that
                 #Alternativley we can call the objects here and not call the ones that it wont work for but i think that will be harder
                 
                 #ui.write(action[key].describeRoom(action['using'])) # This method will not work
                 action[key].Search(action['using']) # it probably should just look like this
-            elif key == 'move':
+            elif key == 'move' and disallowed[key] == True:
                 action[key].Move(action['using'])
-            elif key == 'attack':
+            elif key == 'attack' and disallowed[key] == True:
                 action[key].Attack(action['using'])
-            elif key == 'talk':
+            elif key == 'talk' and disallowed[key] == True:
                 action[key].Talk(action['using'])
-            elif key == 'take':
+            elif key == 'take' and disallowed[key] == True:
                 action[key].Take(action['using'])
-            elif key == 'open':
+            elif key == 'open' and disallowed[key] == True:
                 action[key].Open(action['using'])
-            elif key == 'close':
+            elif key == 'close' and disallowed[key] == True:
                 action[key].Close(action['using'])
-            elif key == 'inspect':
+            elif key == 'inspect' and disallowed[key] == True:
                 action[key].Inspect(action['using'])
-            elif key == 'using' and 'act' in action:
+            elif key == 'using' and 'act' in action and disallowed[key] == True:
                 action['on'].GeneralUse(action['using']) # This one maybe should be the other way round?
-            elif key == 'using':
+            elif key == 'using' and disallowed[key] == True:
                 pass
-            elif key == 'act':
+            elif key == 'act' and disallowed[key] == True:
                 pass
             else:
                 print('Execute error')
