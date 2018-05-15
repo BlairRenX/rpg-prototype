@@ -1044,7 +1044,7 @@ def Simplify(text):
     
     search = ['search','look','find','explore']
     
-    move = ['move','go','travel','walk','climb']
+    move = ['move','go','travel','walk','climb','enter']
     
     attack = ['attack', 'assault', 'hit', 'smash','fight','kill']
     talk = ['talk','speak','talk to']
