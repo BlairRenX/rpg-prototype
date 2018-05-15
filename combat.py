@@ -7,8 +7,8 @@ class UI():
     def __init__(self, main):
         self.main = main
        ##self.output = tk.Label(main, anchor = 'nw', justify = 'left')
-        self.inpt =  tk.Text(main, height = 1)
-        self.enterbut = tk.Button(main, text='Enter', background = 'light blue', height = 1, command = lambda:( self.enter(self.inpt,self.inpt.get('1.0','end')) ))
+        self.inpt =  tk.Text(main, height = 1,fg='#22ee22', background = '#000100')
+        self.enterbut = tk.Button(main, text='Enter',fg='#22ee22', background = '#000100', height = 1, command = lambda:( self.enter(self.inpt,self.inpt.get('1.0','end')) ))
         self.text = ''
 
         self.situation = ["You stand in an empty room. There is a door ahead of you and a door behind you", ["Try north door", "Try south door", "Other"]]
@@ -16,17 +16,18 @@ class UI():
    
         
         self.main.geometry("850x700")
-        self.main.config(background ='#deface')
+        
+        self.main.config(background = '#000100')
 
         #Big output text box. Disabled so cannot be typed in.
         #rel-x,y,height,width are relative placement for window
-        self.output = tk.Label(main, anchor = 'nw', justify = 'left')
+        self.output = tk.Label(main, anchor = 'nw', justify = 'left',fg='#22ee22', background = '#000100')
         self.output.place(relx =0.2, rely = 0.02, relheight=0.6, relwidth=0.6)
 
         #Input box
         #calls 'enter' on key press return/enter key
         
-        self.inpt.bind("<Return>", lambda x: self.enter(self.inpt,self.inpt.get('1.0','end-1c')))
+        self.inpt.bind("<Return>" ,lambda x: self.enter(self.inpt,self.inpt.get('1.0','end-1c')))
         self.inpt.place(relx =0.2, rely = 0.65,  relwidth=0.5)
         #enter is called with the .get() which takes from the ext box.
         # 1.0 is line.character, so line-1.position=0
@@ -254,29 +255,29 @@ class GunUi():
         self.text =''
         self.main = tk.Toplevel(main) 
         self.main.geometry("600x500")
-        self.main.config(background ='#00face')
+        self.main.config(background ='#000000')
         self.main.focus_set()
         self.playerbtns = [[],[],[],[]]
         self.enemybtns = [[],[],[],[]]
 
-        self.info = tk.Label(self.main, text = 'Arrows to move, \n space to skip moving,\n space to target, space to untarget,\n enter to attack, shift+r to reset')
+        self.info = tk.Label(self.main,bg ='black',fg = '#22ee22', text = 'Arrows to move, \n space to skip moving,\n space to target, space to untarget,\n enter to attack, shift+r to reset')
         self.info.place(y = 150, x = 205)
 
-        self.playerHits = tk.Label(self.main, text = 'Total Hits: 0\nDirect Hits: 0\nDamage Percentage: -%')
+        self.playerHits = tk.Label(self.main,bg ='black',fg = '#22ee22', text = 'Total Hits: 0\nDirect Hits: 0\nDamage Percentage: -%')
         self.playerHits.place(x = 50,y=320)
-        self.enemyHits = tk.Label(self.main,text = 'Total Hits: 0\nDirect Hits: 0\nDamage Percentage: -%')
+        self.enemyHits = tk.Label(self.main,bg ='black',fg = '#22ee22',text = 'Total Hits: 0\nDirect Hits: 0\nDamage Percentage: -%')
         self.enemyHits.place(x = 400,y=320)
         
         self.playerGridSize = 4
         for j in range (self.playerGridSize):
             for i in range(self.playerGridSize):
-                self.topRow = tk.Button(self.main,height = 2, width = 4,bg = 'light gray')
+                self.topRow = tk.Button(self.main,height = 2, width = 4,bg = '#000000')
                 self.topRow.place(y = 150+(40*j), x = 50+(37*i))
                 self.playerbtns[j].append(self.topRow)
         self.enemyGridSize = 4
         for j in range (self.enemyGridSize):
             for i in range(self.enemyGridSize):
-                self.topRow = tk.Button(self.main,height = 2, width = 4, bg = 'light gray')
+                self.topRow = tk.Button(self.main,height = 2, width = 4, bg = '#000000')
                 self.topRow.place(y = 150+(40*j), x = 400+(37*i))
                 self.enemybtns[j].append(self.topRow)
 
@@ -341,10 +342,10 @@ class GunUi():
          
         for lst in self.enemybtns:
             for btn in lst:
-                btn.config(bg='light gray')
+                btn.config(bg='#000000')
         for lst in self.playerbtns:
             for btn in lst:
-                btn.config(bg='light gray')
+                btn.config(bg='#000000')
             
         self.moving = True
         self.attackPhase = False
@@ -381,7 +382,7 @@ class GunUi():
             else:   
                 if self.targetPos[0] + direction[0] >= 0 and self.targetPos[0] + direction[0] < self.playerGridSize and self.targetPos[1] + direction[1] >= 0 and self.targetPos[1] + direction[1] < self.playerGridSize:
                     if [self.targetPos[0],self.targetPos[1]] not in self.targeted:
-                        self.enemybtns[self.targetPos[0]][self.targetPos[1]].config(background = 'light gray')
+                        self.enemybtns[self.targetPos[0]][self.targetPos[1]].config(background = '#000000')
                     self.targetPos[0]+=direction[0]
                     self.targetPos[1]+=direction[1]
                     if [self.targetPos[0],self.targetPos[1]] not in self.targeted:
@@ -438,10 +439,10 @@ class GunUi():
                 if target not in targets:
                     targets.append(target)
                     if self.playerbtns[target[0]][target[1]]["background"] == 'green':
-                        self.playerbtns[target[0]][target[1]].config(bg = 'black')
+                        self.playerbtns[target[0]][target[1]].config(bg = 'gray')
                         self.playerDarkGreenHits+=1
                     elif self.playerbtns[target[0]][target[1]]["background"] == '#62ff3f': # light green
-                        self.playerbtns[target[0]][target[1]].config(bg = 'gray')
+                        self.playerbtns[target[0]][target[1]].config(bg = 'dark gray')
                         self.playerLightGreenHits+=1
                     else:
                         self.playerbtns[target[0]][target[1]].config(bg = 'red')
@@ -454,7 +455,7 @@ class GunUi():
         self.attackPhase = True
         for i in self.enemybtns:
             for btn in i:
-                btn.config(bg='light gray')
+                btn.config(bg='#000000')
         
         self.enemyMoves.append(self.enemyCharacter)
         
