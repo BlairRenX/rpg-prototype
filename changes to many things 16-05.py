@@ -43,16 +43,19 @@ class UI():
 
     #write fucntion takes text and the textbox it's from 
     def enter(self,inpt,txt):
+        txt = self.cleanInput(txt)
+        self.cleanOutput()
         if isinstance(txt,str):
+           
+            
             txt = txt.replace('\n','')
 
             if txt == 't':
                 ui.talkWindow(jeremy,C1)
             if txt == 'g':
                 ui.gunWindow(None,None)
-            txt = self.cleanInput(txt)
-            self.cleanOutput()
             
+            ui.write('\n')
             txt = txt+'\n'
             for i in txt:
                 #Types to the end of textbox with value i
@@ -61,7 +64,7 @@ class UI():
 
                 self.inpt.delete('end-2c','end-1c')
                 #sleep for that cool typing effect
-                time.sleep(0.03)
+               ## time.sleep(0.03)
                 #tkinter is shit
                 self.main.update()
             #scrolls output to bottom (without its not possible to scroll at all, its odd)   
@@ -81,14 +84,14 @@ class UI():
         for i in txt:
             self.text += i
             self.output.config(text = self.text)
-            time.sleep(0.05)
+           ## time.sleep(0.05)
             #tkinter is shit
             self.main.update()
         self.inpt.config(state = 'normal')
         
 
     def cleanOutput(self):
-        if self.text.count('\n')>25:
+        while self.text.count('\n')>23:
             cutof = self.text.index('\n')+1
             self.text = self.text[cutof:]
 
@@ -1003,14 +1006,17 @@ class playerCharacter(Character):
             ui.write("That's not in the room.")
 
     def EquipItem(self,item):
-        if self.equipped[item.equippable[1]] == None:
-            self.equipped[item.equippable[1]] = item
-        elif self.equipped[item.equippable[1]] == [] or isinstance(self.equipped[item.equippable[1]], list):
-            #NOTE: THIS MIGHT NOT WORK
-            self.equipped[item.equippable[1]].append(item)
+        if item in self.inventory:
+            if self.equipped[item.equippable[1]] == None:
+                self.equipped[item.equippable[1]] = item
+            elif self.equipped[item.equippable[1]] == [] or isinstance(self.equipped[item.equippable[1]], list):
+                #NOTE: THIS MIGHT NOT WORK
+                self.equipped[item.equippable[1]].append(item)
+            else:
+                self.equipped[item.equippable[1]] = item
+                #I'll put a swap confirmation message here when I'm bothered enough by it
         else:
-            self.equipped[item.equippable[1]] = item
-            #I'll put a swap confirmation message here when I'm bothered enough by it
+            ui.write("That item is not in your inventory.")
 
     def DropItem(self, item):
         if item.droppable == False:
@@ -1114,7 +1120,7 @@ def Execute(text, player):
         allowed = {Place:['search'],
                    Door:['open','close','move'],
                    roomFurnishing:['open','close','search'],
-                   inventoryObject:['search','using','take','give'],
+                   inventoryObject:['search','using','take','give','equip'],
                    nonPlayerCharacter:['attack','talk'],
                    str:['open','search']}
         
@@ -1133,21 +1139,31 @@ def Execute(text, player):
                             player.DisplayInventory()
                         else:
                             player.Inspect(action[key],action['using'])
+                            
                     elif key == 'move'  :
                         player.MoveRooms(action[key].doorID)
+                        
                     elif key == 'attack'  :
                         action[key].Attack(action['using'])
+                        
                     elif key == 'talk'  :
                         action[key].Talk(action['using'])
+                        
                     elif key == 'take'  :
                         action[key].TakeItem(action['using'])
+                        
                     elif key == 'open'  :
                         if action[key] == 'inventory':
                             player.DisplayInventory()
                         else:
                             action[key].Open(action['using'])
+                            
                     elif key == 'close'  :
                         action[key].Close()
+
+                    elif key =='equip':
+                        player.EquipItem(action[key])
+                    
                     elif key == 'using' and 'act' in action  :
                         action['on'].GeneralUse(action['using']) # This one maybe should be the other way round?
                     elif key == 'using'  :
