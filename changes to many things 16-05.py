@@ -608,7 +608,7 @@ class Place(object):
             door.setDescriptor()
 
 
-    def describeRoom(self):
+    def DescribeRoom(self):
             
         roomDescription = ""
         roomDescription += "The room is " + self.search[0] + ". "
@@ -786,7 +786,7 @@ class Door(object):
         if self.direction == 2:
             self.name = "north door"
 
-    def open(self, openTool):
+    def Open(self, openTool):
         if self.opened == False:
             if self.locked[0] == False:
                 self.opened = True
@@ -802,7 +802,7 @@ class Door(object):
         elif self.opened == True:
             ui.write("The door is already open.")
 
-    def close(self):
+    def Close(self):
         if self.opened == True:
             self.opened = False
             ui.write("You close the " + self.name)
@@ -848,7 +848,7 @@ class roomFurnishing(gameObject):
         self.opened = opened
         self.locked = locked
         
-    def open(self, openTool):
+    def Open(self, openTool):
         if self.opened == False:
             if self.locked[0] == False:
                 self.opened = True
@@ -875,7 +875,7 @@ class roomFurnishing(gameObject):
                     self.room.objects.append(item)
                     ui.write(item.basicDesc)
                     
-    def close(self):
+    def Close(self):
         if self.opened == True:
             for item in self.containedObjects:
                 item.hidden = True
@@ -888,7 +888,7 @@ class roomFurnishing(gameObject):
     
 
 class inventoryObject(gameObject):
-    def __init__(self, objName, basicDesc, inspectDesc, taken=["No-one","You pick up the object."], expendable = [False], droppable=True, equippable = [False]):
+    def __init__(self, objName, basicDesc, inspectDesc, expendable = [False], droppable=True, equippable = [False], taken=["No-one","You pick up the object."]):
         super(inventoryObject,self).__init__(basicDesc, inspectDesc)
 
         self.objName = objName
@@ -966,7 +966,7 @@ class playerCharacter(Character):
         super(playerCharacter,self).__init__(name, startingRoom, inventory)
         #this should really be in the Character class but I want to make sure it's working first
 
-    def useItem(self, item):
+    def UseItem(self, item):
         #the actual use
         if item.expendable[0] == True:
             if item.expendable[1] == 1:
@@ -976,7 +976,7 @@ class playerCharacter(Character):
             #if the item's expendable
             #a confirmation message should probably be put in here at some point
 
-    def inspect(self,item,using):
+    def Inspect(self,item,using):
         if isinstance(item, inventoryObject):
             if item in self.inventory:
                 #can never be too careful
@@ -989,16 +989,20 @@ class playerCharacter(Character):
                 if interaction[0] == True:
                     ui.write("It looks like this object can be " + interaction[1] + "ed.") 
 
-    def takeItem(self, item):
-        if item.taken[0] == "No-one" or item.taken[0] == "you":
-            item.taken[0] = "you"
-            self.inventory.append(item)
-            #will need to remove it from the room, too
-            ui.write(item.taken[1][0].upper()+item.taken[1][1:])
+    def TakeItem(self, item):
+        if item in self.currentRoom.objects:
+            if item.taken[0] == "No-one" or item.taken[0] == "you":
+                item.taken[0] = "you"
+                self.inventory.append(item)
+                
+                self.currentRoom.objects.remove(item)
+                ui.write(item.taken[1][0].upper()+item.taken[1][1:] + item.objName + ".")
+            else:
+                ui.write("That's not yours.")
         else:
-            ui.write("That's not yours.")
+            ui.write("That's not in the room.")
 
-    def equipItem(self,item):
+    def EquipItem(self,item):
         if self.equipped[item.equippable[1]] == None:
             self.equipped[item.equippable[1]] = item
         elif self.equipped[item.equippable[1]] == [] or isinstance(self.equipped[item.equippable[1]], list):
@@ -1008,19 +1012,19 @@ class playerCharacter(Character):
             self.equipped[item.equippable[1]] = item
             #I'll put a swap confirmation message here when I'm bothered enough by it
 
-    def dropItem(self, item):
+    def DropItem(self, item):
         if item.droppable == False:
             ui.write("You need this object for something.")
         else:
             self.inventory.remove(item)
             currentRoom.objects.append(item)
                 
-    def displayInventory(self):
+    def DisplayInventory(self):
         ui.write("You have in your possession: ")
         for item in self.inventory:
             ui.write(item.basicDesc[0].upper()+item.basicDesc[1:])
 
-    def moveRooms(self, door):
+    def MoveRooms(self, door):
         #self.currentRoom.doors[door]
         for aDoor in self.currentRoom.doors:
             if aDoor.doorID == door:
@@ -1029,13 +1033,13 @@ class playerCharacter(Character):
     def showLocation(self):
         ui.write("You are in " + self.currentRoom.search[0])
 
-    def searchRoom(self):
-        ui.write(self.currentRoom.describeRoom())
+    def SearchRoom(self):
+        ui.write(self.currentRoom.DescribeRoom())
 
-    def talk(self, other):
+    def Talk(self, other):
         ui.talkWindow(self,other)
         
-aSmallRock = inventoryObject("small rock", "a small rock", "hard stone")
+aSmallRock = inventoryObject("small rock", "a small rock", "hard stone", [False], True, [True, "weaponLeft"])
 chestOfDrawers = roomFurnishing(name="chest of drawers",basicDesc="chest of drawers", inspectDesc="A weathered wooden chest of 4 drawers.", containedObjects=[aSmallRock])
      
 R1 = Place("R1", 3, [chestOfDrawers], [],[], ["a simple yet comfortable bedroom"])
@@ -1124,26 +1128,26 @@ def Execute(text, player):
                     if key == 'search'  :
                         
                         if action[key] == player.currentRoom:
-                            player.searchRoom()
+                            player.SearchRoom()
                         elif action[key] == 'inventory':
-                            player.displayInventory()
+                            player.DisplayInventory()
                         else:
-                            player.inspect(action[key],action['using'])
+                            player.Inspect(action[key],action['using'])
                     elif key == 'move'  :
-                        player.moveRooms(action[key].doorID)
+                        player.MoveRooms(action[key].doorID)
                     elif key == 'attack'  :
                         action[key].Attack(action['using'])
                     elif key == 'talk'  :
                         action[key].Talk(action['using'])
                     elif key == 'take'  :
-                        action[key].Take(action['using'])
+                        action[key].TakeItem(action['using'])
                     elif key == 'open'  :
                         if action[key] == 'inventory':
-                            player.displayInventory()
+                            player.DisplayInventory()
                         else:
-                            action[key].open(action['using'])
+                            action[key].Open(action['using'])
                     elif key == 'close'  :
-                        action[key].close()
+                        action[key].Close()
                     elif key == 'using' and 'act' in action  :
                         action['on'].GeneralUse(action['using']) # This one maybe should be the other way round?
                     elif key == 'using'  :
