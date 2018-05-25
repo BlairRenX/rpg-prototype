@@ -1070,9 +1070,9 @@ class playerCharacter(Character):
             ui.write('It is to your %s'%item.name[:-5])
             if item.opened:
                 ui.write('The door is wide open')
-                if jeremy.currentRoom.name != item.room1.name and item.seeThrough:
+                if self.currentRoom.name != item.room1.name and item.seeThrough:
                     ui.write('You can see this door leads to %s.'%item.room1.search)
-                elif jeremy.currentRoom.name != item.room2.name and item.seeThrough:
+                elif self.currentRoom.name != item.room2.name and item.seeThrough:
                     ui.write('You can see this door leads to %s.'%item.room2.search)
                 else:
                     ui.write('It isn\'t clear where this leads')
@@ -1100,6 +1100,8 @@ class playerCharacter(Character):
                 ui.write(item.taken[1][0].upper()+item.taken[1][1:] +' '+ item.name + ".")
             else:
                 ui.write("That's not yours.")
+        elif item in self.inventory:
+            ui.write("That's already in your inventory")
         else:
             ui.write("That's not in the room.")
 
