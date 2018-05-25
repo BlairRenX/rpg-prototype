@@ -700,7 +700,7 @@ class Place(object):
         if len(self.furnishings) > 0:
             roomDescription += "The room is furnished with "
             for furnishing in self.furnishings:
-                roomDescription += "a " +furnishing.basicDesc + ", "
+                roomDescription += "a " +furnishing.name + ", "
 
         if len(self.objects) > 0:
             roomDescription += "In the room, there is "
@@ -714,7 +714,7 @@ class Place(object):
             
         
 class Door(object):
-    def __init__(self, doorID, room1, room2, direction, locked, opened=False, seeThrough = True, description = 'A basic, nondescript door. It looks quite old.'):
+    def __init__(self, doorID, room1, room2, direction, locked = [False,[],False],opened=False, seeThrough = True, description = 'A basic, nondescript door. It looks quite old.'):
         self.doorID = doorID
         self.room1 = room1
         self.room2 = room2
@@ -812,12 +812,7 @@ class Door(object):
              
         elif self.locked[0] == True and self.opened == False:
             if openTool is not None and openTool != '':
-                if openTool.name == self.locked[1]:
-                    self.locked = False
-                    self.opened = True
-                    ui.write("The " + self.name + " is locked. You open it using the " + openTool.name + ".")
-                else:
-                    ui.write("You can't unlock this with the " + openTool.name)
+                self.Unlock(openTool)
             else:
                 ui.write("The door is locked, or perhaps it is only stuck. You can\'t get it open anyhow.")
                 
@@ -840,8 +835,42 @@ class Door(object):
     def Lock(self,key):
         ui.write('++Lock not Implemented++')
 
-    def Unlock(self,key):
-        ui.write('++Unlock not Implemented++')
+    def Unlock(self,key): #door
+        specificUnlock = False
+        generalUnlock = [False,None]
+        if self.locked[0]:
+            if isinstance(key,inventoryObject):
+                if key in jeremy.inventory:
+                    ui.write("You attempt to open the %s using the %s"%(self.name,key.name))
+                    if key.unlocks[0]:
+                        for item in key.unlocks[1]:
+                            if item in self.locked[1]:
+                                if item[0] == "K":
+                                    specificUnlock = True
+                                else:
+                                    generalUnlock = [True,item]
+
+                        if specificUnlock:
+                            self.locked[0] = False
+                            ui.write("You insert the %s and the %s effortlessly clicks unlocked"%(key.name,self.name))
+                            return()
+                            
+                        elif generalUnlock[0]:
+                            self.locked[0] = False
+                            self.locked[1] = []
+                            self.opened = True
+                            ui.write("You %s using the %s on the %s for some time untill it finally swings open. It is rather damaged now, doesn't look like that can be locked again"%(generalUnlock[1],key.name,self.name))
+                            
+                        else:
+                            ui.write("Looks like that didn't do the job, the %s is still firmly shut"%self.name)
+                    else:
+                        ui.write("You won't be able to open anything with that")
+                else:
+                    ui.write("You do not possess the %s"%key.name)
+            else:
+                ui.write("This isn't something that can be used that way.")
+        else:
+            ui.write("The %s isn't locked..."%self.name)
              
 class gameObject(object):
     def __init__(self, basicDesc, inspectDesc, hidden = False):
@@ -887,20 +916,20 @@ class roomFurnishing(gameObject):
         
         self.locked = locked
         
-    def Open(self, openTool):
+    def Open(self, openTool,UsedWhenCalledOnDoor_ignoreButDontRemove):
         if self.opened[0] == True:
             if self.opened[1] == False:
                 if self.locked[0] == False:
                     self.opened[1] = True
                     ui.write("The " + self.basicDesc + " is not locked. You open it.")
-                    
-            elif self.locked[0] == True:
-                if openTool.name == self.locked[1]:
-                    self.locked = False
-                    self.opened[1] = True
-                    ui.write("The " + self.name + " is locked. You open it using the " + openTool.name + ".")
-                else:
-                    ui.write("You can't unlock this with the " + openTool.name)
+            
+                elif self.locked[0] == True:
+                    if openTool is not None and openTool != '':
+                        self.Unlock(openTool)
+                    else:
+                        ui.write("The %s won't open. It is locked tight shut, or perhaps only stuck."%self.name)
+                
+       
             elif self.opened[1] == True:
                 ui.write("The door is already open.")
                 
@@ -932,18 +961,50 @@ class roomFurnishing(gameObject):
     def Lock(self,key):
         ui.write('++Lock not Implemented++')
 
-    def Unlock(self,key):
-        ui.write('++Unlock not Implemented++')
+    def Unlock(self,key): # furnishing
+        specificUnlock = False
+        generalUnlock = [False,None]
+        if self.locked[0]:
+            if isinstance(key,inventoryObject):
+                if key in jeremy.inventory:
+                    ui.write("You attempt to open the %s using the %s"%(self.name,key.name))
+                    if key.unlocks[0]:
+                        for item in key.unlocks[1]:
+                            if item in self.locked[1]:
+                                if item[0] == "K":
+                                    specificUnlock = True
+                                else:
+                                    generalUnlock = [True,item]
 
+                        if specificUnlock:
+                            self.locked[0] = False
+                            ui.write("You insert the %s and the %s effortlessly clicks unlocked"%(key.name,self.name))
+                            
+                        elif generalUnlock[0]:
+                            self.locked[0] = False
+                            self.locked[1] = []
+                            self.opened[1] = True
+                            ui.write("You %s using the %s on the %s for some time untill it finally swings open. It is rather damaged now, doesn't look like that can be locked again"%(generalUnlock[1],key.name,self.name))
+                            
+                        else:
+                            ui.write("Looks like that didn't do the job, the %s is still firmly shut"%self.name)
+                    else:
+                        ui.write("You won't be able to open anything with that")
+                else:
+                    ui.write("You do not possess the %s"%key.name)
+            else:
+                ui.write("This isn't something that can be used that way.")
+        else:
+            ui.write("The %s isn't locked..."%self.name)
     
 
 class inventoryObject(gameObject):
-    def __init__(self, name, basicDesc, inspectDesc, unlocks = [], expendable = [False], droppable=True, equippable = [False], taken=["No-one","You pick up the"]):
+    def __init__(self, name, basicDesc, inspectDesc, unlocks = [False,[]], expendable = [False,None], droppable=True, equippable = [False,[]], taken=["No-one","You pick up the"]):
         super(inventoryObject,self).__init__(basicDesc, inspectDesc)
 
         self.name = name
 
-        self.unlocks = unlocks
+        self.unlocks = unlocks 
         
         self.taken = taken
         #include things about ownership, a description when you pick it up, etc...
@@ -966,9 +1027,9 @@ class Character(object):
         self.currentRoom = startingRoom
         #an array of inventory objects
         
-        basicShirt = inventoryObject(name ="basic shirt", basicDesc="a basic synth-cloth shirt", inspectDesc="There's a small rip in the armpit...", equippable=[True,"clothesTorso"])
-        basicLegs = inventoryObject(name= "basic legwear", basicDesc="basic synth-cloth legwear", inspectDesc="This could probably do with being washed.", equippable=[True, "clothesLegs"])
-        basicShoes = inventoryObject(name="basic shoes", basicDesc="basic synthetic fabric and rubber shoes", inspectDesc="You can feel a hole in your sock. Ugh.", equippable=[True, "footwear"])
+        basicShirt = inventoryObject(name ="basic shirt", basicDesc="A basic synth-cloth shirt", inspectDesc="There's a small rip in the armpit...", equippable=[True,"clothesTorso"])
+        basicLegs = inventoryObject(name= "basic legwear", basicDesc="Some basic synth-cloth legwear", inspectDesc="This could probably do with being washed.", equippable=[True, "clothesLegs"])
+        basicShoes = inventoryObject(name="basic shoes", basicDesc="A pair of basic synthetic fabric and rubber shoes", inspectDesc="You can feel a hole in your sock. Ugh.", equippable=[True, "footwear"])
         
         self.inventory.append(basicShirt)
         self.inventory.append(basicLegs)
@@ -1021,7 +1082,7 @@ class playerCharacter(Character):
     def UseItem(self, item):
         #the actual use
         if item.expendable[0] == True:
-            if item.expendable[1] == 1:
+            if item.expendable[1] <= 1:
                 self.inventory.remove(item)
             else:
                 item.expendable[1] = item.expendable[1] -1
@@ -1029,6 +1090,8 @@ class playerCharacter(Character):
             #a confirmation message should probably be put in here at some point
 
     def Inspect(self,item,using):
+
+        
         if isinstance(item, inventoryObject):
             ui.write("This " + item.name + " belongs to " + item.taken[0] + ".")
             ui.write(item.inspectDesc[0].upper()+item.inspectDesc[1:])
@@ -1052,6 +1115,14 @@ class playerCharacter(Character):
                 ui.write('These look like some heavy duty trousers, the %s could be used to protect your lower body in combat.'%item.name)
             if "accessories" in item.equippable[1]:
                 ui.write('The %s won\'t be much good in the way of utility, you\'re sure it would look quite pretty on you none the less.'%item.name)
+
+            
+            if item.unlocks[0]:
+                for action in item.unlocks[1]:
+                    if action[0] == "K":
+                        ui.write("The writing on this %s makes implies it opens some lock with the ID %s."%(item.name,item.unlocks[1][0][1:]))
+                    else:
+                        ui.write("This looks like it could be used to %s open weak or vunerable objects, or doors."%action)
                 
         elif isinstance(item, roomFurnishing):
             ui.write(item.inspectDesc[0].upper()+item.inspectDesc[1:])
@@ -1070,12 +1141,19 @@ class playerCharacter(Character):
                     
                     if item.locked[0]:
                         ui.write('It appears to be locked.')
+                        for action in item.locked[1]:
+                            if action[0] == "K":
+                                ui.write("It appears like a key or keycard of some kind could be used to unlock this")
+                            else:
+                                ui.write("Given the appropriate tool, it looks like it could be %sed open with some effort."%action)
                     else:
                         ui.write('It doesn\'t seem to be locked in any way')
                     
             if item.interactive[0] == True:
                 for interaction in item.interactive[1]:
-                    ui.write("It looks like this can be " + interaction + "ed.")
+                    if interaction != "open":
+                        ui.write("It looks like this could be " + interaction + "ed.")
+            
                     
            
         elif isinstance(item, Door):
@@ -1092,14 +1170,27 @@ class playerCharacter(Character):
 
             else:
                 ui.write('The door is closed')
-                if not item.locked[0]:
-                    ui.write('It doesn\'t appear to be locked. It looks as if it could be opened with a heafty pull.')
-                else:
+                if item.locked[0]:
                     ui.write('It seems to be locked. That or it\'s rusted shut.')
+                    for action in item.locked[1]:
+                        if action[0] == "K":
+                            ui.write("It appears like a key or keycard of some kind could be used to unlock this")
+                        else:
+                            ui.write("Given the appropriate tool, it looks like it could be %sed open with some effort."%action)
+                else:
+                     ui.write('It doesn\'t appear to be locked. It looks as if it could be opened with a heafty pull.')
+                     
                 ui.write('You aren\'t sure where it leads.') # ToDo change this for previously visited rooms
+                
+            if item.locked[0] and item.locked[2]:
+                ui.write("There is a sign next to the door, it is faded but you make out the number %s"%item.locked[1][0][1:])
+
+
                 
 
     def TakeItem(self, item):
+    
+        
         if item in self.currentRoom.objects:
             if item.taken[0] == "No-one" or item.taken[0] == "you":
                 item.taken[0] = "you"
@@ -1162,15 +1253,19 @@ class playerCharacter(Character):
 
     def Talk(self, other):
         ui.talkWindow(self,other)
-        
-aSmallRock = inventoryObject("small rock", "a small rock", "hard stone", [False], True, [True, ["weaponRight","weaponLeft"]])
-chestOfDrawers = roomFurnishing(name="chest of drawers",basicDesc="chest of drawers", inspectDesc="A weathered wooden chest of 4 drawers.", containedObjects=[aSmallRock]) 
-R1 = Place("R1", 3, [chestOfDrawers], [],[], "a simple yet comfortable bedroom")
+
+
+#name, basicDesc, inspectDesc, unlocks = [], expendable = [False,None], droppable=True, equippable = [False,[]]        
+keyCard001 = inventoryObject(name = "basic keycard",basicDesc= "a basic white keycard",inspectDesc="You can just make out the number 001 on one face of the card.",unlocks = [True,["K001"]])
+aSmallRock = inventoryObject("small rock", "a small rock", "A rock made of hard stone.",[True,["smash"]] , [False,None], True, [True, ["weaponRight","weaponLeft"]])
+chestOfDrawers = roomFurnishing(name="chest of drawers",basicDesc="a chest of drawers", inspectDesc="A weathered wooden chest of 4 drawers.", containedObjects=[keyCard001],locked = [True,["smash"]]) 
+
+R1 = Place("R1", 3, [chestOfDrawers], [aSmallRock],[], "a simple yet comfortable bedroom")
 R2 = Place("R2",4, [],[], [],"a lavishly decorated mezzanine", "a painting of yourself")
 R3 = Place("R3",5, [], [aSmallRock],[])
 
-R1.setDoors([R2])
-R2.setDoors([R1, R3], [False,None],3)
+R1.setDoors([R2],direction = 0,locked = [True,["K001"],True])
+R2.setDoors([R1, R3], 0)
 R3.setDoors([R2], 1)
 
 R1.setDoorDescs()
