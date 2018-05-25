@@ -610,9 +610,9 @@ class Place(object):
         for door in self.doors:
             ui.write(door.viewDoors())
             
-    def setDoors(self, otherRooms, direction=2):
+    def setDoors(self, otherRooms, locked= [False,None], direction=2):
         for otherRoom in otherRooms:
-            self.doors.append(Door("D" + self.name + otherRoom.name, self, otherRoom, direction))
+            self.doors.append(Door("D" + self.name + otherRoom.name, self, otherRoom, direction,locked))
 
     def setDoorDescs(self):    
         for door in self.doors:
@@ -714,7 +714,7 @@ class Place(object):
             
         
 class Door(object):
-    def __init__(self, doorID, room1, room2, direction, locked=[False, None], opened=False, seeThrough = True, description = 'A basic, nondescript door. It looks quite old.'):
+    def __init__(self, doorID, room1, room2, direction, locked, opened=False, seeThrough = True, description = 'A basic, nondescript door. It looks quite old.'):
         self.doorID = doorID
         self.room1 = room1
         self.room2 = room2
@@ -830,14 +830,19 @@ class Door(object):
                 ui.write('It isn\'t clear where this leads.')
             ui.write('You stay standing in the doorway.')
 
-    def Close(self):
+    def Close(self,using):
         if self.opened == True:
             self.opened = False
             ui.write("You close the " + self.name)
         elif self.opened == False:
             ui.write("The " + self.name + " is already closed.")
             
+    def Lock(self,key):
+        ui.write('++Lock not Implemented++')
 
+    def Unlock(self,key):
+        ui.write('++Unlock not Implemented++')
+             
 class gameObject(object):
     def __init__(self, basicDesc, inspectDesc, hidden = False):
         self.basicDesc = basicDesc
@@ -853,8 +858,8 @@ class gameObject(object):
 
     def getDesc(self):
         #print(self.basicDesc)
-        
         return self.basicDesc
+    
 
 class roomFurnishing(gameObject):
     def __init__(self, name, basicDesc, inspectDesc, interactive=[False,[]], containedObjects=[], opened=[False,None], locked=[False, None]):
@@ -911,7 +916,7 @@ class roomFurnishing(gameObject):
         else:
             ui.write('The ' + self.basicDesc + ' cannot be opened.') 
                     
-    def Close(self):
+    def Close(self,using):
         if self.opened[0] == True:
             if self.opened[1] == True:
                 for item in self.containedObjects:
@@ -924,20 +929,28 @@ class roomFurnishing(gameObject):
         else:
             ui.write("This " + self.basicDesc + " cannot be closed.")
 
+    def Lock(self,key):
+        ui.write('++Lock not Implemented++')
+
+    def Unlock(self,key):
+        ui.write('++Unlock not Implemented++')
+
     
 
 class inventoryObject(gameObject):
-    def __init__(self, name, basicDesc, inspectDesc, expendable = [False], droppable=True, equippable = [False], taken=["No-one","You pick up the"]):
+    def __init__(self, name, basicDesc, inspectDesc, unlocks = [], expendable = [False], droppable=True, equippable = [False], taken=["No-one","You pick up the"]):
         super(inventoryObject,self).__init__(basicDesc, inspectDesc)
 
         self.name = name
 
+        self.unlocks = unlocks
+        
         self.taken = taken
         #include things about ownership, a description when you pick it up, etc...
 
         self.droppable = droppable
         #removing itself from the bag, and so on...
-
+        
         self.expendable = expendable
         #if it's expendable, and if so, how many uses it has
 
@@ -1157,7 +1170,7 @@ R2 = Place("R2",4, [],[], [],"a lavishly decorated mezzanine", "a painting of yo
 R3 = Place("R3",5, [], [aSmallRock],[])
 
 R1.setDoors([R2])
-R2.setDoors([R1, R3], 3)
+R2.setDoors([R1, R3], [False,None],3)
 R3.setDoors([R2], 1)
 
 R1.setDoorDescs()
@@ -1222,8 +1235,8 @@ def Execute(text, player):
         if 'using' not in action:
             action['using'] = None
         allowed = {Place:['search'],
-                   Door:['search','open','close','move'],
-                   roomFurnishing:['open','close','search'],
+                   Door:['search','open','close','move','lock','unlock'],
+                   roomFurnishing:['open','close','search','lock','unlock'],
                    inventoryObject:['search','using','take','give','equip'],
                    nonPlayerCharacter:['attack','talk'],
                    playerCharacter:['search'],
@@ -1274,11 +1287,19 @@ def Execute(text, player):
                             
                     elif key == 'close'  :
                         ui.write('You try to close the %s.'%action[key].name)
-                        action[key].Close()
+                        action[key].Close(action['using'])
 
                     elif key =='equip':
                         ui.write('You try to equipt the %s.'%action[key].name)
                         player.EquipItem(action[key])
+
+                    elif key =='lock':
+                        ui.write('You try to lock or block the %s.'%action[key].name)
+                        action[key].Lock(action['using'])
+
+                    elif key =='unlock':
+                        ui.write('You try to unlock or unblock the %s.'%action[key].name)
+                        action[key].Unlock(action['using'])
                     
                     elif key == 'using' and 'act' in action  :
                         action['on'].GeneralUse(action['using']) # This one maybe should be the other way round?
@@ -1562,17 +1583,20 @@ def Simplify(text):
     talk = ['talk','speak','talk to']
     
     take = ['take','grab','remove','carry','obtain','pick up','pick','steal']
-    close = ['close','shut','block']
+    close = ['close','shut']
     inspect = []
     
-    open_ = ['open', 'unlock','unblock'] #open is keyword, uses open_ instead
+    open_ = ['open'] #open is keyword, uses open_ instead
+
+    lock = ['unlock','unblock']
+    unlock = ['lock','block']
 
     equip = ['equipt','put on','wear','hold']
 
     
 
-    verbs = ['using','search','move','attack','talk','take','open','close','equip']
-    words = {'using':using,'search':search,'move':move,'attack':attack,'talk':talk,'take':take,'open':open_,'close':close,'equip':equip}
+    verbs = ['using','search','move','attack','talk','take','open','close','equip','lock','unlock']
+    words = {'using':using,'search':search,'move':move,'attack':attack,'talk':talk,'take':take,'open':open_,'close':close,'equip':equip,'lock':lock,'unlock':unlock}
 
     
                 
