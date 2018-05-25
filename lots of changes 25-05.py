@@ -1674,7 +1674,7 @@ def Simplify(text):
     
     move = ['move','go','travel','walk','climb','enter']
     
-    attack = ['attack', 'assault', 'hit', 'smash','fight','kill']
+    attack = ['attack', 'assault', 'hit','fight','kill']
     talk = ['talk','speak','talk to']
     
     take = ['take','grab','remove','carry','obtain','pick up','pick','steal']
@@ -1684,7 +1684,7 @@ def Simplify(text):
     open_ = ['open'] #open is keyword, uses open_ instead
 
     lock = ['unlock','unblock']
-    unlock = ['lock','block']
+    unlock = ['lock','block','smash'] # Add all general unlocking methods
 
     equip = ['equipt','put on','wear','hold']
 
