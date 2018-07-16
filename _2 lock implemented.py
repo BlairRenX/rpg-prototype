@@ -94,7 +94,7 @@ class UI():
     def cleanOutput(self):
         while self.text.count('\n')>23:
             cutof = self.text.index('\n')+1
-            self.text = self.text[cutof:]
+            self.text = self.text[cutof:] # bug , this sometimes deosn't work
 
     def cleanInput(self,txt):
         if isinstance(txt,str):
@@ -962,11 +962,7 @@ class roomFurnishing(gameObject):
 
         self.opened = opened
         
-        if len(self.containedObjects) > 0:
-            self.interactive[0] = True
-            self.interactive[1].append('open')
-            self.opened = [True,False]
-
+    
 
         self.locked = locked
         self.blocked = blocked
@@ -975,10 +971,22 @@ class roomFurnishing(gameObject):
 
         self.blocking = blocking
 
+        if len(self.containedObjects) > 0 or self.canOpen:
+            self.interactive[0] = True
+            self.interactive[1].append('Open')
+            self.opened = [True,self.opened[1]]
+
         if self.blocking[0]:
             self.blocking[1].Block(self,self.blocking[2])
+            self.interactive[0] = True
+            self.interactive[1].append('Unblock')
 
+        if self.locked[0]:
+            self.interactive[0] = True
+            self.interactive[1].append('Unlock')
+            
 
+        
         
         
     def Open(self,openTool,UsedWhenCalledOnDoor_ignoreButDontRemove):
@@ -1121,7 +1129,7 @@ class roomFurnishing(gameObject):
                     ui.write("It looks like it could be %sed open with the appropriate tool."%action)
 
 class inventoryObject(gameObject):
-    def __init__(self, name, basicDesc, inspectDesc, unlocks = None, expendable = None, droppable=True, equippable = None, canBlock = False, doing=None, taken=None):
+    def __init__(self, name, basicDesc, inspectDesc, unlocks = None, expendable = None, droppable=True, equippable = None, canBlock = False, doing=None,taken=None):
         super(inventoryObject,self).__init__(basicDesc, inspectDesc)
 
         if unlocks is None:
@@ -1138,6 +1146,8 @@ class inventoryObject(gameObject):
         if doing is None:
             doing = [False,None]
             #[doing something,what]
+
+                    
 
         if taken is None:
             taken = ["No-one","You pick up the"]
@@ -1164,6 +1174,18 @@ class inventoryObject(gameObject):
 
         self.doing = doing
         #if it is doing somethhing like blocking a door
+
+       
+        self.use = []
+        # Default use of object
+
+        if self.unlocks[0]:
+            self.use.append('Unlock')
+
+        if set(self.equippable[1]).intersection({"weaponRight","weaponLeft"}):
+            self.use.append('Attack')
+            
+       
 
         self.location = None
 
@@ -1595,6 +1617,8 @@ def Execute(text, player):
                 error = True
             
     if not error:
+        verbs = ['debug','using','search','go','attack','talk','take','open','close','equip','lock','unlock','unblock','block']
+
         if 'using' not in action:
             action['using'] = None
         allowed = {Place:['debug','search'],
@@ -1750,8 +1774,44 @@ def Execute(text, player):
                     
                         
                     
-                    elif key == 'using' and 'act' in action  :
-                        action['on'].GeneralUse(action['using']) # This one maybe should be the other way round?
+                    elif key == 'using' and 'act' in action:
+                        if isinstance(action['using'], inventoryObject) and isinstance(action['act'],roomFurnishing):
+##                            if len(action['using'].use) == 0:
+##                                ui.write("How exactly are you using the %s?"%action['using'].name)
+##                            elif len(action['using'].use) == 1:
+##                                if action['using'].use[0].lower() in verbs:
+##                                    ui.write("Using the %s, you try to %s the %s"%(action['using'].name,action['using'].use[0],action['act'].name))
+##                                    try:
+##                                        exec("action['act']."+action['using'].use[0][0].upper()+action['using'].use[0][1:]+"(action['using'])")
+##                                    except:
+##                                        ui.write("Something went wrong. Maybe try something more explicit.")
+##                                        
+##                            elif len(action['using'].use) >1:
+                            intersection = list(set(action['using'].use).intersection(set(action['act'].interactive[1])))
+                            if len(intersection) == 0:
+                               ui.write("How exactly are you using the %s?"%action['using'].name)
+                            elif len(intersection) == 1:
+                                ui.write("Using the %s, you try to %s the %s"%(action['using'].name,intersection[0],action['act'].name))
+                                try:
+                                    exec("action['act']."+intersection[0][0].upper()+intersection[0][1:]+"(action['using'])")
+                                except:
+                                    ui.write("Something went wrong. Maybe try something more explicit.")
+                            elif len(intersection) > 1:
+                                ui.write("Looks like there are more than one uses of the %s on the %s:"%(action['using'].name,action['act'].name))
+                                for item in intersection:
+                                    ui.write("  The %s can be used to %s the %s"%(action['using'].name,item,action['act'].name))
+
+
+                        else:
+                            ui.write("++Only implemented for use inventoryObject on roomFurnishing++")
+                            
+                                    
+                                    
+                                   
+
+                                
+
+                        
                     elif key == 'using'  :
                         pass
                     elif key == 'act'  :
@@ -1759,7 +1819,7 @@ def Execute(text, player):
                     else:
                         print('Execute error')
 
-            if not allow and action[key] is not None :
+            if not allow and action[key] is not None and key !='act' :
                 ui.write('You cannot %s that.'%key)
                         
                             
